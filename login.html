@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll System - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --error: #e74c3c;
+            --success: #2ecc71;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .auth-container {
+            width: 768px;
+            max-width: 100%;
+            min-height: 480px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-container {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            transition: all 0.6s ease-in-out;
+        }
+        
+        .login-container {
+            left: 0;
+            width: 50%;
+            z-index: 2;
+        }
+        
+        .register-container {
+            left: 0;
+            width: 50%;
+            opacity: 0;
+            z-index: 1;
+        }
+        
+        .overlay-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            transition: transform 0.6s ease-in-out;
+            z-index: 100;
+        }
+        
+        .overlay {
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 0 0;
+            color: #fff;
+            position: relative;
+            left: -100%;
+            height: 100%;
+            width: 200%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+        }
+        
+        .overlay-panel {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+            text-align: center;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+        }
+        
+        .overlay-left {
+            transform: translateX(-20%);
+        }
+        
+        .overlay-right {
+            right: 0;
+            transform: translateX(0);
+        }
+        
+        /* Animation */
+        .auth-container.right-panel-active .login-container {
+            transform: translateX(100%);
+        }
+        
+        .auth-container.right-panel-active .register-container {
+            transform: translateX(100%);
+            opacity: 1;
+            z-index: 5;
+        }
+        
+        .auth-container.right-panel-active .overlay-container {
+            transform: translateX(-100%);
+        }
+        
+        .auth-container.right-panel-active .overlay {
+            transform: translateX(50%);
+        }
+        
+        .auth-container.right-panel-active .overlay-left {
+            transform: translateX(0);
+        }
+        
+        .auth-container.right-panel-active .overlay-right {
+            transform: translateX(20%);
+        }
+        
+        /* Form styling */
+        form {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 0 50px;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        h1 {
+            font-weight: 500;
+            margin: 0 0 20px;
+            color: var(--dark);
+        }
+        
+        .social-container {
+            margin: 20px 0;
+        }
+        
+        .social-container a {
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            height: 40px;
+            width: 40px;
+        }
+        
+        input, select {
+            background: #eee;
+            border: none;
+            padding: 12px 15px;
+            margin: 8px 0;
+            width: 100%;
+            border-radius: 5px;
+        }
+        
+        button {
+            border-radius: 5px;
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 12px 45px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: transform 80ms ease-in;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        button:focus {
+            outline: none;
+        }
+        
+        button.ghost {
+            background: transparent;
+            border-color: #fff;
+        }
+        
+        .toggle-link {
+            color: #333;
+            font-size: 14px;
+            text-decoration: none;
+            margin: 15px 0;
+        }
+        
+        .flash-messages {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .flash-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .flash-error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--error);
+        }
+        
+        .flash-success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .auth-container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+            
+            .form-container {
+                width: 100%;
+            }
+            
+            .overlay-container {
+                display: none;
+            }
+            
+            .auth-container.right-panel-active .login-container,
+            .auth-container.right-panel-active .register-container {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container" id="authContainer">
+        <!-- Login Form -->
+        <div class="form-container login-container">
+            <form method="POST" action="{{ url_for('login') }}">
+                <h1>Sign In</h1>
+                
+                <div class="flash-messages">
+                    {% if error %}
+                        <div class="flash-message flash-error">{{ error }}</div>
+                    {% endif %}
+                    {% if success %}
+                        <div class="flash-message flash-success">{{ success }}</div>
+                    {% endif %}
+                </div>
+                
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <a href="#" class="toggle-link">Forgot your password?</a>
+                <button type="submit">Sign In</button>
+                <a href="#" class="toggle-link" onclick="togglePanel()">Don't have an account? Sign Up</a>
+            </form>
+        </div>
+        
+        <!-- Register Form -->
+        <div class="form-container register-container">
+            <form method="POST" action="{{ url_for('employee_register') }}">
+                <h1>Create Account</h1>
+                
+                <input type="number" name="employee_id" placeholder="Employee ID" required>
+                <input type="text" name="first_name" placeholder="First Name" required>
+                <input type="text" name="last_name" placeholder="Last Name" required>
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <select name="department_id" required>
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="1">Engineering</option>
+                    <option value="2">HR</option>
+                    <option value="3">Sales</option>
+                    <option value="4">Marketing</option>
+                </select>
+                <button type="submit">Sign Up</button>
+                <a href="#" class="toggle-link" onclick="togglePanel()">Already have an account? Sign In</a>
+            </form>
+        </div>
+        
+        <!-- Overlay -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Welcome Back!</h1>
+                    <p>To keep connected with us please login with your personal info</p>
+                    <button class="ghost" onclick="togglePanel()">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>Hello, Friend!</h1>
+                    <p>Enter your personal details and start your journey with us</p>
+                    <button class="ghost" onclick="togglePanel()">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePanel() {
+            const container = document.getElementById('authContainer');
+            container.classList.toggle('right-panel-active');
+            
+            // Clear flash messages when switching panels
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => msg.remove());
+        }
+        
+        // Initialize - show login form by default
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if error and request.path == url_for('employee_register') %}
+                document.getElementById('authContainer').classList.add('right-panel-active');
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

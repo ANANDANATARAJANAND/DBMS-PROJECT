@@ -1,0 +1,54 @@
+<div class="tab-content" id="attendance" style="display: none;">
+    <h2>Manage Attendance</h2>
+    <div class="form-group">
+        <h3>Add Attendance Record</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="insert_attendance">
+            <select name="emp_id" required>
+                <option value="">Select Employee</option>
+                {% for emp in employees %}
+                <option value="{{ emp[0] }}">{{ emp[1] }} {{ emp[2] }} (ID: {{ emp[0] }})</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date" required>
+            <select name="status" required>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Late">Late</option>
+                <option value="Half Day">Half Day</option>
+            </select>
+            <button type="submit">Add Record</button>
+        </form>
+    </div>
+    <div class="form-group">
+        <h3>Delete Attendance Record</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="delete_attendance">
+            <select name="attendance_id" required>
+                <option value="">Select Record to Delete</option>
+                {% for record in attendance %}
+                <option value="{{ record[0] }}">
+                    {{ record[6] }} {{ record[7] }} - {{ record[2] }} ({{ record[3] }})
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit">Delete Record</button>
+        </form>
+    </div>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Employee</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+        {% for record in attendance %}
+        <tr>
+            <td>{{ record[0] }}</td>
+            <td>{{ record[6] }} {{ record[7] }}</td>
+            <td>{{ record[2] }}</td>
+            <td>{{ record[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>

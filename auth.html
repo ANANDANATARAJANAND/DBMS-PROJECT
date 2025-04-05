@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        .container {
+            width: 400px;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            color: #777;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .tab.active {
+            color: #1a73e8;
+            border-bottom: 2px solid #1a73e8;
+            font-weight: 700;
+        }
+        .tab:hover {
+            color: #1557b0;
+        }
+        .form-content {
+            padding: 30px;
+        }
+        .form-box {
+            display: none;
+        }
+        .form-box.active {
+            display: block;
+        }
+        h2 {
+            font-size: 1.5em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .input-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-box input, .input-box select {
+            width: 100%;
+            padding: 10px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            font-size: 1em;
+            color: #333;
+        }
+        .input-box label {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1em;
+            color: #777;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .input-box input:focus ~ label,
+        .input-box input:valid ~ label {
+            top: -5px;
+            font-size: 0.8em;
+            color: #1a73e8;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #1a73e8;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+        button:hover {
+            background: #1557b0;
+        }
+        button:disabled {
+            background: #a0c3ff;
+            cursor: not-allowed;
+        }
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #fff;
+            border-top: 3px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        button.loading .loader {
+            display: inline-block;
+        }
+        button.loading span {
+            visibility: hidden;
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        p {
+            text-align: center;
+            margin-top: 15px;
+            color: #777;
+        }
+        p a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        p a:hover {
+            text-decoration: underline;
+        }
+        .error, .success {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .error { color: #d93025; }
+        .success { color: #34c759; }
+        @media (max-width: 480px) {
+            .container {
+                width: 90%;
+                margin: 20px;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+            .tab {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+            }
+            .tab.active {
+                border-bottom: 1px solid #1a73e8;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab {% if active_tab == 'login' %}active{% endif %}" onclick="showTab('login')">Login</div>
+            <div class="tab {% if active_tab == 'register' %}active{% endif %}" onclick="showTab('register')">Register</div>
+        </div>
+        <div class="form-content">
+            <div class="form-box {% if active_tab == 'login' %}active{% endif %}" id="login">
+                <h2>Login</h2>
+                <form method="POST" id="login-form">
+                    <input type="hidden" name="action" value="login">
+                    <div class="input-box">
+                        <input type="text" name="username" required>
+                        <label>Username</label>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="password" required>
+                        <label>Password</label>
+                    </div>
+                    <button type="submit" id="login-btn"><span>Login</span><span class="loader"></span></button>
+                </form>
+                <p>Forgot Password? <a href="{{ url_for('reset_password') }}">Reset Password</a></p>
+                {% if error and active_tab == 'login' %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+                {% if success and active_tab == 'login' %}
+                    <p class="success">{{ success }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-box {% if active_tab == 'register' %}active{% endif %}" id="register">
+                <h2>Register</h2>
+                <form method="POST">
+                    <input type="hidden" name="action" id="register-action" value="employee_register">
+                    <div class="input-box">
+                        <input type="number" name="employee_id" required>
+                        <label>Employee ID</label>
+                    </div>
+                    <div class="input-box">
+                        <input type="text" name="first_name" required>
+                        <label>First Name</label>
+                    </div>
+                    <div class="input-box">
+                        <input type="text" name="last_name" required>
+                        <label>Last Name</label>
+                    </div>
+                    <div class="input-box">
+                        <input type="text" name="username" required>
+                        <label>Username</label>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="password" required>
+                        <label>Password</label>
+                    </div>
+                    <div class="input-box">
+                        <select name="role" id="role-select" onchange="toggleDepartment(); document.getElementById('register-action').value = this.value == 'Admin' ? 'admin_register' : 'employee_register';">
+                            <option value="Employee">Employee</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="input-box" id="department-select" style="display: block;">
+                        <select name="department_id">
+                            <option value="1">Engineering</option>
+                            <option value="2">Marketing</option>
+                            <option value="3">Sales</option>
+                            <option value="4">HR</option>
+                            <option value="5">IT</option>
+                        </select>
+                    </div>
+                    <button type="submit">Register</button>
+                </form>
+                {% if error and active_tab == 'register' %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+                {% if success and active_tab == 'register' %}
+                    <p class="success">{{ success }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.form-box').forEach(box => box.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        function toggleDepartment() {
+            const role = document.getElementById('role-select').value;
+            const deptSelect = document.getElementById('department-select');
+            deptSelect.style.display = role === 'Employee' ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('.input-box input').forEach(input => {
+            if (input.value) input.classList.add('valid');
+            input.addEventListener('input', () => {
+                if (input.value) input.classList.add('valid');
+                else input.classList.remove('valid');
+            });
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+        });
+    </script>
+</body>
+</html>

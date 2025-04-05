@@ -1,0 +1,341 @@
+\<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ first_name }}'s Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Enhanced Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #2c3e50, #1a252f);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+        }
+        
+        .sidebar a {
+            display: block;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: #34495e;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pdf-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .pdf-button:hover {
+            background-color: #c0392b;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Welcome section styles */
+        .welcome {
+            margin-bottom: 20px;
+        }
+        
+        #clock {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        /* Leave Request Section */
+        .leave-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input[type="date"],
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+        }
+        
+        button[type="submit"] {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        /* Status Badges */
+        .status-pending { color: #f39c12; }
+        .status-approved { color: #2ecc71; }
+        .status-rejected { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Payroll System</h2>
+        <a href="{{ url_for('employee_dashboard') }}" class="active">Dashboard</a>
+        <a href="#attendance" onclick="showSection('attendance-section')">Attendance</a>
+        <a href="#leave" onclick="showSection('leave-request-section')">Leave Requests</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2>{{ first_name }} {{ last_name }} - Employee Dashboard</h2>
+            
+            <a href="{{ url_for('generate_payscale_pdf') }}" class="pdf-button">
+                Download Payslip PDF
+            </a>
+        </div>
+
+        <div class="card" id="dashboard-section">
+            <div class="welcome">
+                <h1>Employee Dashboard</h1>
+                <p>Manage your work information efficiently.</p>
+                <div id="clock"></div>
+            </div>
+            
+            <h2>Your Payroll Information</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pay Date</th>
+                        <th>Gross Pay</th>
+                        <th>Taxes</th>
+                        <th>Deductions</th>
+                        <th>Net Pay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payroll in payrolls %}
+                    <tr>
+                        <td>{{ payroll[2] }}</td>
+                        <td>₹{{ "%.2f"|format(payroll[3]) }}</td>
+                        <td>₹{{ "%.2f"|format(payroll[4]) }}</td>
+                        <td>₹{{ "%.2f"|format(payroll[5]) }}</td>
+                        <td>₹{{ "%.2f"|format(payroll[6]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card" id="attendance-section" style="display:none;">
+            <div class="welcome">
+                <h1>Attendance Records</h1>
+                <p>View your attendance history.</p>
+                <div id="clock2"></div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance %}
+                    <tr>
+                        <td>{{ record[2] }}</td>
+                        <td>{{ record[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card" id="leave-request-section" style="display:none;">
+            <div class="welcome">
+                <h1>Leave Requests</h1>
+                <p>Manage your time off requests.</p>
+                <div id="clock3"></div>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="leave-form">
+                <input type="hidden" name="action" value="request_leave">
+                
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <input type="date" id="end_date" name="end_date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reason">Reason</label>
+                    <textarea id="reason" name="reason" required placeholder="Enter your reason for leave"></textarea>
+                </div>
+                
+                <button type="submit">Submit Leave Request</button>
+            </form>
+            
+            <h3>Your Leave History</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in leave_requests %}
+                    <tr>
+                        <td>{{ request[2] }}</td>
+                        <td>{{ request[3] }}</td>
+                        <td>{{ request[4] }}</td>
+                        <td class="status-{{ request[5].lower() }}">{{ request[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Clock function
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString();
+            document.getElementById('clock2').textContent = now.toLocaleTimeString();
+            document.getElementById('clock3').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Show selected section
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.card').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Update active nav link
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Scroll to section
+            document.getElementById(sectionId).scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Date validation for leave form
+        document.querySelector('.leave-form').addEventListener('submit', function(e) {
+            const startDate = new Date(this.start_date.value);
+            const endDate = new Date(this.end_date.value);
+            
+            if (startDate > endDate) {
+                alert('End date must be after start date');
+                e.preventDefault();
+            }
+        });
+
+        // Initialize - show dashboard by default
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.sidebar a:first-child').classList.add('active');
+        });
+    </script>
+</body>
+</html>
